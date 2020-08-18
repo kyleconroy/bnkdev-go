@@ -37,6 +37,31 @@ func (r *CreateACHTransferRequest) body() interface{} {
 	return &req
 }
 
+type CreateAccountTransferRequest struct {
+	AccountID string `json:"account_id,omitempty"`
+
+	// The transfer amount in the minor unit of the account currency. For
+	// dollars, for example, this is cents.
+	Amount int `json:"amount,omitempty"`
+
+	// The description you choose to give the transfer.
+	Description string `json:"description,omitempty"`
+
+	// The identifier for the account that will receive the transfer.
+	DestinationAccountID string `json:"destination_account_id,omitempty"`
+}
+
+// Returns CreateAccountTransferRequest with AccountID set to the empty string so that it's
+// not included in the JSON request body.
+func (r *CreateAccountTransferRequest) body() interface{} {
+	if r == nil {
+		return r
+	}
+	req := *r
+	req.AccountID = ""
+	return &req
+}
+
 // Transfers are how you move money from your account. You can move money
 // between your bnk.dev accounts or you can move money to accounts held at
 // other banks.
@@ -54,8 +79,16 @@ type Transfer struct {
 
 func (c *Client) CreateACHTransfer(ctx context.Context, r *CreateACHTransferRequest) (*Transfer, error) {
 	var resp Transfer
-	if err := c.request(ctx, "POST", fmt.Sprintf("/accounts/%s/transfers/accounts", r.AccountID), nil, r.body(), &resp); err != nil {
+	if err := c.request(ctx, "POST", fmt.Sprintf("/accounts/%s/transfers/achs", r.AccountID), nil, r.body(), &resp); err != nil {
 		return nil, fmt.Errorf("CreateACHTransfer: %w", err)
+	}
+	return &resp, nil
+}
+
+func (c *Client) CreateAccountTransfer(ctx context.Context, r *CreateAccountTransferRequest) (*Transfer, error) {
+	var resp Transfer
+	if err := c.request(ctx, "POST", fmt.Sprintf("/accounts/%s/transfers/accounts", r.AccountID), nil, r.body(), &resp); err != nil {
+		return nil, fmt.Errorf("CreateAccountTransfer: %w", err)
 	}
 	return &resp, nil
 }
