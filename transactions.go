@@ -8,6 +8,10 @@ import (
 	"fmt"
 )
 
+type ListPendingTransactionsRequest struct {
+	AccountID string `json:"account_id,omitempty"`
+}
+
 type ListTransactionsRequest struct {
 	AccountID string `json:"account_id,omitempty"`
 }
@@ -49,7 +53,16 @@ type Transaction struct {
 	Date string `json:"date,omitempty"` // The ISO 8601 date on which the transaction occured.
 }
 
-// Returns a list of agent objects that match the provided query.
+// Returns a list of pending transations.
+func (c *Client) ListPendingTransactions(ctx context.Context, r *ListPendingTransactionsRequest) (*ListTransactionsResponse, error) {
+	var resp ListTransactionsResponse
+	if err := c.request(ctx, "GET", fmt.Sprintf("/accounts/%s/pending-transactions", r.AccountID), nil, nil, &resp); err != nil {
+		return nil, fmt.Errorf("ListPendingTransactions: %w", err)
+	}
+	return &resp, nil
+}
+
+// Returns a list of transactions.
 func (c *Client) ListTransactions(ctx context.Context, r *ListTransactionsRequest) (*ListTransactionsResponse, error) {
 	var resp ListTransactionsResponse
 	if err := c.request(ctx, "GET", fmt.Sprintf("/accounts/%s/transactions", r.AccountID), nil, nil, &resp); err != nil {
